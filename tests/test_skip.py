@@ -5,34 +5,31 @@
 import pytest
 
 from selene import have
-from selenium import webdriver
 from selene import browser
 
 
 @pytest.fixture(params=["1536*864", "1920*1080", "516*800", "720*1100"])
 def browser2(request):
     [width, height] = request.param.split("*")
-    browser.config.driver=webdriver.Chrome()
-    browser.driver.set_window_size(width, height)
-    yield browser
-    browser.quit()
+    browser.config.window_width = width
+    browser.config.window_height = height
+    if (width, height) in [("516", "800"), ("720", "1100")]:
+        return 'mobile'
+    if (width, height) in [("1536", "864"), ("1920", "1080")]:
+        return 'desktop'
 
 
 def test_github_desktop(browser2):
-    size = browser2.driver.get_window_size()
-    if ((size["width"] == 516 and size["height"] == 800) or
-            (size["width"] == 720 and size["height"] == 1100)):
+    if browser2 == "mobile":
         pytest.skip("неподходящий размер для desktop версии")
-    browser2.open("https://github.com")
-    browser2.element('.HeaderMenu-link--sign-in').press_enter()
-    browser2.element(".auth-form-header").should(have.exact_text('Sign in to GitHub'))
+    browser.open("https://github.com")
+    browser.element('.HeaderMenu-link--sign-in').press_enter()
+    browser.element(".auth-form-header").should(have.exact_text('Sign in to GitHub'))
 
 
 def test_github_mobile(browser2):
-    size = browser2.driver.get_window_size()
-    if ((size["width"] == 1536 and size["height"] == 864) or
-            (size["width"] == 1920 and size["height"] == 1080)):
+    if browser2 == "desktop":
         pytest.skip("неподходящий размер для мобильной версии")
-    browser2.open("https://github.com")
+    browser.open("https://github.com")
     browser.element('a[href*="login"]').press_enter()
     browser.element(".auth-form-header").should(have.exact_text('Sign in to GitHub'))
