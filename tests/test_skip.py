@@ -4,16 +4,16 @@
 """
 import pytest
 
-from selene import browser, have
+from selene import have
 from selenium import webdriver
+from selene import browser
 
 
 @pytest.fixture(params=["1536*864", "1920*1080", "516*800", "720*1100"])
 def browser2(request):
     [width, height] = request.param.split("*")
-    driver = webdriver.Chrome()
-    browser.config.driver = driver
-    browser.driver.set_window_size(width=width, height=height)
+    browser.config.driver=webdriver.Chrome()
+    browser.driver.set_window_size(width, height)
     yield browser
     browser.quit()
 
@@ -26,7 +26,6 @@ def test_github_desktop(browser2):
     browser2.open("https://github.com")
     browser2.element('.HeaderMenu-link--sign-in').press_enter()
     browser2.element(".auth-form-header").should(have.exact_text('Sign in to GitHub'))
-    pass
 
 
 def test_github_mobile(browser2):
